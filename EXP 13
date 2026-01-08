@@ -1,0 +1,59 @@
+#include <stdio.h>
+
+int mod26(int x)
+{
+    return (x % 26 + 26) % 26;
+}
+
+int modInverse(int det)
+{
+    det = mod26(det);
+    for(int i = 1; i < 26; i++)
+        if((det * i) % 26 == 1)
+            return i;
+    return -1;  // no inverse
+}
+
+int main()
+{
+    int P[2][2], C[2][2], K[2][2];
+    int det, invDet;
+
+    printf("Enter Plaintext matrix (2x2):\n");
+    scanf("%d %d %d %d",
+          &P[0][0], &P[0][1],
+          &P[1][0], &P[1][1]);
+
+    printf("Enter Ciphertext matrix (2x2):\n");
+    scanf("%d %d %d %d",
+          &C[0][0], &C[0][1],
+          &C[1][0], &C[1][1]);
+
+    det = mod26(P[0][0]*P[1][1] - P[0][1]*P[1][0]);
+    invDet = modInverse(det);
+
+    if(invDet == -1)
+    {
+        printf("Plaintext matrix not invertible!\n");
+        return 0;
+    }
+
+    int Pinv[2][2];
+    Pinv[0][0] =  mod26( P[1][1] * invDet);
+    Pinv[0][1] =  mod26(-P[0][1] * invDet);
+    Pinv[1][0] =  mod26(-P[1][0] * invDet);
+    Pinv[1][1] =  mod26( P[0][0] * invDet);
+
+    for(int i = 0; i < 2; i++)
+        for(int j = 0; j < 2; j++)
+            K[i][j] = mod26(
+                C[i][0] * Pinv[0][j] +
+                C[i][1] * Pinv[1][j]);
+
+    printf("\nRecovered Key Matrix:\n");
+    printf("%d %d\n%d %d\n",
+           K[0][0], K[0][1],
+           K[1][0], K[1][1]);
+
+    return 0;
+}
