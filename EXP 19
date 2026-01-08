@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 8 // 64-bit block
+
+/* Simple DES placeholder function (for demonstration) */
+void DES_encrypt(unsigned char *plaintext, unsigned char *key, unsigned char *ciphertext)
+{
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        ciphertext[i] = plaintext[i] ^ key[i]; // XOR as dummy DES
+}
+
+/* XOR two blocks */
+void XOR(unsigned char *a, unsigned char *b, unsigned char *out)
+{
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        out[i] = a[i] ^ b[i];
+}
+
+/* 3DES CBC Encryption */
+void TripleDES_CBC(unsigned char *plaintext, unsigned char *key1, unsigned char *key2, unsigned char *key3,
+                   unsigned char *IV, unsigned char *ciphertext, int length)
+{
+    unsigned char prevBlock[BLOCK_SIZE];
+    unsigned char block[BLOCK_SIZE];
+    unsigned char temp[BLOCK_SIZE];
+
+    memcpy(prevBlock, IV, BLOCK_SIZE);
+
+    for(int i = 0; i < length; i += BLOCK_SIZE)
+    {
+        memcpy(block, plaintext + i, BLOCK_SIZE);
+
+        /* CBC XOR with previous ciphertext */
+        XOR(block, prevBlock, block);
+
+        /* 3DES: E_k3(D_k2(E_k1(plaintext))) */
+        DES_encrypt(block, key1, temp);   // First DES
+        DES_encrypt(temp, key2, temp);    // Second DES (dummy D)
+        DES_encrypt(temp, key3, block);   // Third DES
+
+        memcpy(ciphertext + i, block, BLOCK_SIZE);
+        memcpy(prevBlock, block, BLOCK_SIZE);
+    }
+}
+
+int main()
+{
+    unsigned char plaintext[16] = "HELLOWORLD12345"; // 16 bytes
+    unsigned char key1[BLOCK_SIZE] = "KEYONE12";
+    unsigned char key2[BLOCK_SIZE] = "KEYTWO12";
+    unsigned char key3[BLOCK_SIZE] = "KEYTHR12";
+    unsigned char IV[BLOCK_SIZE]   = "INITVEC1";
+    unsigned char ciphertext[16];
+
+    TripleDES_CBC(plaintext, key1, key2, key3, IV, ciphertext, 16);
+
+    printf("Ciphertext (hex): ");
+    for(int i = 0; i < 16; i++)
+        printf("%02X ", ciphertext[i]);
+    printf("\n");
+
+    return 0;
+}
