@@ -1,0 +1,105 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+
+#define MAX 500
+
+/* English letter frequency (%) */
+double engFreq[26] = {
+    8.167, 1.492, 2.782, 4.253, 12.702, 2.228,
+    2.015, 6.094, 6.966, 0.153, 0.772, 4.025,
+    2.406, 6.749, 7.507, 1.929, 0.095, 5.987,
+    6.327, 9.056, 2.758, 0.978, 2.360, 0.150,
+    1.974, 0.074
+};
+
+typedef struct {
+    int key;
+    double score;
+    char text[MAX];
+} Result;
+
+/* Decrypt using additive cipher */
+void decrypt(char *cipher, char *plain, int key)
+{
+    int i;
+    for(i = 0; cipher[i]; i++)
+    {
+        if(isalpha(cipher[i]))
+        {
+            int c = toupper(cipher[i]) - 'A';
+            plain[i] = ((c - key + 26) % 26) + 'A';
+        }
+        else
+            plain[i] = cipher[i];
+    }
+    plain[i] = '\0';
+}
+
+/* Chi-square scoring */
+double scoreText(char *text)
+{
+    int count[26] = {0}, letters = 0;
+    double score = 0;
+
+    for(int i = 0; text[i]; i++)
+        if(isalpha(text[i]))
+        {
+            count[text[i] - 'A']++;
+            letters++;
+        }
+
+    for(int i = 0; i < 26; i++)
+    {
+        double expected = engFreq[i] * letters / 100;
+        if(expected > 0)
+            score += pow(count[i] - expected, 2) / expected;
+    }
+
+    return score;
+}
+
+/* Sort results by score */
+void sortResults(Result r[], int n)
+{
+    for(int i = 0; i < n-1; i++)
+        for(int j = i+1; j < n; j++)
+            if(r[j].score < r[i].score)
+            {
+                Result temp = r[i];
+                r[i] = r[j];
+                r[j] = temp;
+            }
+}
+
+int main()
+{
+    char cipher[MAX];
+    Result results[26];
+    int topN;
+
+    printf("Enter Ciphertext:\n");
+    gets(cipher);
+
+    printf("How many top plaintexts to display? ");
+    scanf("%d", &topN);
+
+    for(int k = 0; k < 26; k++)
+    {
+        decrypt(cipher, results[k].text, k);
+        results[k].key = k;
+        results[k].score = scoreText(results[k].text);
+    }
+
+    sortResults(results, 26);
+
+    printf("\nTop %d Possible Plaintexts:\n", topN);
+    for(int i = 0; i < topN && i < 26; i++)
+    {
+        printf("\nKey = %d | Score = %.2f\n%s\n",
+               results[i].key, results[i].score, results[i].text);
+    }
+
+    return 0;
+}
