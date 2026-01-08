@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char plaintext[] = "MEETMEATTHEUSUALPLACEATTENRATHERTHANEIGHTOCLOCK";
+    int key[2][2] = { {9, 4}, {5, 7} };
+    int i;
+
+    printf("Encrypted Text:\n");
+
+    for(i = 0; i < strlen(plaintext); i += 2)
+    {
+        int p1 = plaintext[i]   - 'A';
+        int p2 = plaintext[i+1] - 'A';
+
+        int c1 = (key[0][0] * p1 + key[0][1] * p2) % 26;
+        int c2 = (key[1][0] * p1 + key[1][1] * p2) % 26;
+
+        printf("%c%c", c1 + 'A', c2 + 'A');
+    }
+
+    return 0;
+}
