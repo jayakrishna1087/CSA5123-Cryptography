@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 8
+
+/* Dummy encryption/decryption (XOR cipher) */
+void encrypt(unsigned char *in, unsigned char *key, unsigned char *out)
+{
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        out[i] = in[i] ^ key[i];
+}
+
+void decrypt(unsigned char *in, unsigned char *key, unsigned char *out)
+{
+    for(int i = 0; i < BLOCK_SIZE; i++)
+        out[i] = in[i] ^ key[i];
+}
+
+/* ECB Mode */
+void ECB_encrypt(unsigned char *pt, unsigned char *key, unsigned char *ct, int len)
+{
+    for(int i = 0; i < len; i += BLOCK_SIZE)
+        encrypt(pt + i, key, ct + i);
+}
+
+void ECB_decrypt(unsigned char *ct, unsigned char *key, unsigned char *pt, int len)
+{
+    for(int i = 0; i < len; i += BLOCK_SIZE)
+        decrypt(ct + i, key, pt + i);
+}
+
+/* CBC Mode */
+void CBC_encrypt(unsigned char *pt, unsigned char *key, unsigned char *iv,
+                 unsigned char *ct, int len)
+{
+    unsigned char temp[BLOCK_SIZE];
+
+    for(int i = 0; i < len; i += BLOCK_SIZE)
+    {
+        for(int j = 0; j < BLOCK_SIZE; j++)
+            temp[j] = pt[i + j] ^ iv[j];
+
+        encrypt(temp, key, ct + i);
+        memcpy(iv, ct + i, BLOCK_SIZE);
+    }
+}
+
+void CBC_decrypt(unsigned char *ct, unsigned char *key, unsigned char *iv,
+                 unsigned char *pt, int len)
+{
+    unsigned char temp[BLOCK_SIZE];
+
+    for(int i = 0; i < len; i += BLOCK_SIZE)
+    {
+        decrypt(ct + i, key, temp);
+
+        for(int j = 0; j < BLOCK_SIZE; j++)
+            pt[i + j] = temp[j] ^ iv[j];
+
+        memcpy(iv, ct + i, BLOCK_SIZE);
+    }
+}
+
+int main()
+{
+    unsigned char plaintext[16] = "HELLOWORLD12345";
+    unsigned char key[BLOCK_SIZE] = "SECUREKY";
+    unsigned char iv[BLOCK_SIZE]  = "INITVEC1";
+
+    unsigned char ecb_ct[16], ecb_pt[16];
+    unsigned char cbc_ct[16], cbc_pt[16];
+
+    /* ECB */
+    ECB_encrypt(plaintext, key, ecb_ct, 16);
+    ecb_ct[0] ^= 0x01;   // introduce error in C1
+    ECB_decrypt(ecb_ct, key, ecb_pt, 16);
+
+    /* CBC */
+    unsigned char iv_enc[BLOCK_SIZE], iv_dec[BLOCK_SIZE];
+    memcpy(iv_enc, iv, BLOCK_SIZE);
+    memcpy(iv_dec, iv, BLOCK_SIZE);
+
+    CBC_encrypt(plaintext, key, iv_enc, cbc_ct, 16);
+    cbc_ct[0] ^= 0x01;   // introduce error in C1
+    CBC_decrypt(cbc_ct, key, iv_dec, cbc_pt, 16);
+
+    printf("Original Plaintext : %s\n", plaintext);
+    printf("ECB Decrypted Text : %s\n", ecb_pt);
+    printf("CBC Decrypted Text : %s\n", cbc_pt);
+
+    return 0;
+}
