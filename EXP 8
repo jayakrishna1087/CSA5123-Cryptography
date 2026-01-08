@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char keyword[50], plaintext[100], cipher[100];
+    char keyTable[26];
+    int used[26] = {0};
+    int i, j = 0;
+
+    printf("Enter Keyword: ");
+    gets(keyword);
+
+    printf("Enter Plain Text: ");
+    gets(plaintext);
+
+    for(i = 0; keyword[i] != '\0'; i++)
+    {
+        char ch = toupper(keyword[i]);
+        if(isalpha(ch) && !used[ch - 'A'])
+        {
+            keyTable[j++] = ch;
+            used[ch - 'A'] = 1;
+        }
+    }
+
+    for(i = 0; i < 26; i++)
+    {
+        if(!used[i])
+        {
+            keyTable[j++] = i + 'A';
+        }
+    }
+
+    for(i = 0; plaintext[i] != '\0'; i++)
+    {
+        if(isalpha(plaintext[i]))
+        {
+            cipher[i] = keyTable[toupper(plaintext[i]) - 'A'];
+        }
+        else
+        {
+            cipher[i] = plaintext[i]; 
+        }
+    }
+
+    cipher[i] = '\0';
+
+    printf("\nGenerated Cipher Alphabet:\n");
+    for(i = 0; i < 26; i++)
+        printf("%c ", keyTable[i]);
+
+    printf("\n\nEncrypted Text:\n%s", cipher);
+
+    return 0;
+}
