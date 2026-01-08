@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char plaintext[100], cipher[100];
+    int a, b, i;
+
+    printf("Enter Plain Text: ");
+    gets(plaintext);
+
+    printf("Enter value of a: ");
+    scanf("%d", &a);
+
+    printf("Enter value of b: ");
+    scanf("%d", &b);
+
+    for(i = 0; plaintext[i] != '\0'; i++)
+    {
+        if(isalpha(plaintext[i]))
+        {
+            int p = toupper(plaintext[i]) - 'A';
+            cipher[i] = (a * p + b) % 26 + 'A';
+        }
+        else
+        {
+            cipher[i] = plaintext[i]; 
+        }
+    }
+
+    cipher[i] = '\0';
+
+    printf("Encrypted Text: %s", cipher);
+
+    return 0;
+}
