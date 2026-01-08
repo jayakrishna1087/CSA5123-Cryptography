@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char cipher[100], plain[100];
+    int a = 3, b = 15;
+    int a_inv = 9;   // modular inverse of 3 mod 26
+    int i;
+
+    printf("Enter Cipher Text: ");
+    gets(cipher);
+
+    for(i = 0; cipher[i] != '\0'; i++)
+    {
+        if(isalpha(cipher[i]))
+        {
+            int c = toupper(cipher[i]) - 'A';
+            int p = a_inv * (c - b + 26) % 26;
+            plain[i] = p + 'A';
+        }
+        else
+        {
+            plain[i] = cipher[i];
+        }
+    }
+
+    plain[i] = '\0';
+
+    printf("Decrypted Text: %s", plain);
+
+    return 0;
+}
