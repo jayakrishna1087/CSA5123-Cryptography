@@ -1,0 +1,49 @@
+#include <stdio.h>
+
+// Function to compute (base^exp) % mod
+long long modExp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    while (exp > 0) {
+        result = (result * base) % mod;
+        exp--;
+    }
+    return result;
+}
+
+int main() {
+    int p = 17, q = 11;            // Prime numbers
+    int n = p * q;                // Modulus
+    int phi = (p - 1) * (q - 1);  // Euler's Totient
+
+    int e = 7;                    // Public key
+    int d = 0;
+
+    // Calculate private key d
+    for (int i = 1; i < phi; i++) {
+        if ((e * i) % phi == 1) {
+            d = i;
+            break;
+        }
+    }
+
+    int message = 9;
+
+    // Encryption
+    long long encrypted = modExp(message, e, n);
+
+    // Decryption
+    long long decrypted = modExp(encrypted, d, n);
+
+    printf("RSA Public Key Encryption Scheme\n");
+    printf("--------------------------------\n");
+    printf("Prime numbers p = %d, q = %d\n", p, q);
+    printf("Modulus n = %d\n", n);
+    printf("Public Key (e, n) = (%d, %d)\n", e, n);
+    printf("Private Key (d, n) = (%d, %d)\n\n", d, n);
+
+    printf("Original Message = %d\n", message);
+    printf("Encrypted Message = %lld\n", encrypted);
+    printf("Decrypted Message = %lld\n", decrypted);
+
+    return 0;
+}
