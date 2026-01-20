@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+#define TOTAL_LANES 25
+#define RATE_LANES 16
+#define CAPACITY_LANES 9
+
+int main() {
+    int lanes[TOTAL_LANES];
+    int i, rounds = 0;
+
+    for (i = 0; i < RATE_LANES; i++)
+        lanes[i] = 1;   // nonzero bit present
+
+    for (i = RATE_LANES; i < TOTAL_LANES; i++)
+        lanes[i] = 0;   // capacity lanes
+
+    while (1) {
+        rounds++;
+
+        for (i = 0; i < RATE_LANES; i++)
+            lanes[i] ^= 1;   // toggle to simulate XOR
+
+        int allFilled = 1;
+        for (i = RATE_LANES; i < TOTAL_LANES; i++) {
+            if (lanes[i] == 0) {
+                allFilled = 0;
+                break;
+            }
+        }
+
+        if (allFilled) {
+            printf("All lanes filled after %d rounds\n", rounds);
+            break;
+        }
+
+        // Stop after some iterations to avoid infinite loop
+        if (rounds == 1000) {
+            printf("Capacity lanes never become nonzero\n");
+            break;
+        }
+    }
+
+    return 0;
+}
