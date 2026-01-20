@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+/* Encrypt plaintext using one-time pad Vigenère */
+void encrypt_otp_vigenere(char *plaintext, int *key, char *ciphertext, int len) {
+    for (int i = 0; i < len; i++) {
+        if (plaintext[i] >= 'A' && plaintext[i] <= 'Z')
+            ciphertext[i] = ((plaintext[i] - 'A' + key[i]) % 26) + 'A';
+        else if (plaintext[i] >= 'a' && plaintext[i] <= 'z')
+            ciphertext[i] = ((plaintext[i] - 'a' + key[i]) % 26) + 'a';
+        else
+            ciphertext[i] = plaintext[i];  // leave non-alphabetic unchanged
+    }
+    ciphertext[len] = '\0';
+}
+
+/* Decrypt ciphertext using the same key */
+void decrypt_otp_vigenere(char *ciphertext, int *key, char *plaintext, int len) {
+    for (int i = 0; i < len; i++) {
+        if (ciphertext[i] >= 'A' && ciphertext[i] <= 'Z')
+            plaintext[i] = ((ciphertext[i] - 'A' - key[i] + 26) % 26) + 'A';
+        else if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z')
+            plaintext[i] = ((ciphertext[i] - 'a' - key[i] + 26) % 26) + 'a';
+        else
+            plaintext[i] = ciphertext[i];
+    }
+    plaintext[len] = '\0';
+}
+
+int main() {
+    char plaintext[256];
+    printf("Enter plaintext (A-Z / a-z only): ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+
+    int len = strlen(plaintext);
+    if (plaintext[len-1] == '\n') {
+        plaintext[len-1] = '\0';
+        len--;
+    }
+
+    int key[256];
+    srand(time(NULL));
+
+    printf("Random Key: ");
+    for (int i = 0; i < len; i++) {
+        key[i] = rand() % 26;  // random number 0-25
+        printf("%d ", key[i]);
+    }
+    printf("\n");
+
+    char ciphertext[256];
+    encrypt_otp_vigenere(plaintext, key, ciphertext, len);
+    printf("Ciphertext: %s\n", ciphertext);
+
+    char decrypted[256];
+    decrypt_otp_vigenere(ciphertext, key, decrypted, len);
+    printf("Decrypted : %s\n", decrypted);
+
+    return 0;
+}
