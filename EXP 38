@@ -1,0 +1,80 @@
+#include <stdio.h>
+
+#define MOD 26
+
+/* Multiply 2x2 matrices */
+void multiply(int A[2][2], int B[2][2], int R[2][2]) {
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            R[i][j] = (A[i][0]*B[0][j] + A[i][1]*B[1][j]) % MOD;
+}
+
+/* Encrypt plaintext using Hill cipher */
+void encrypt(int key[2][2], int pt[2][2], int ct[2][2]) {
+    multiply(key, pt, ct);
+}
+
+/* Compute determinant */
+int det(int A[2][2]) {
+    return (A[0][0]*A[1][1] - A[0][1]*A[1][0]) % MOD;
+}
+
+/* Modular inverse of determinant */
+int mod_inv(int d) {
+    d = (d + MOD) % MOD;
+    for (int i = 1; i < MOD; i++)
+        if ((d * i) % MOD == 1)
+            return i;
+    return -1;
+}
+
+/* Inverse of 2x2 matrix mod 26 */
+int inverse(int A[2][2], int inv[2][2]) {
+    int d = det(A);
+    int d_inv = mod_inv(d);
+    if (d_inv == -1) return 0;
+
+    inv[0][0] =  A[1][1] * d_inv % MOD;
+    inv[0][1] = -A[0][1] * d_inv % MOD;
+    inv[1][0] = -A[1][0] * d_inv % MOD;
+    inv[1][1] =  A[0][0] * d_inv % MOD;
+
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            inv[i][j] = (inv[i][j] + MOD) % MOD;
+
+    return 1;
+}
+
+int main() {
+    /* Secret key (unknown to attacker) */
+    int key[2][2] = {{3, 3}, {2, 5}};
+
+    /* Chosen plaintext (attacker selects) */
+    int plaintext[2][2] = {{7, 4}, {11, 15}};   // H E | L P
+
+    int ciphertext[2][2];
+    encrypt(key, plaintext, ciphertext);
+
+    printf("Ciphertext matrix:\n");
+    printf("%d %d\n%d %d\n\n",
+           ciphertext[0][0], ciphertext[0][1],
+           ciphertext[1][0], ciphertext[1][1]);
+
+    /* Known plaintext attack: recover key */
+    int pt_inv[2][2];
+    if (!inverse(plaintext, pt_inv)) {
+        printf("Plaintext matrix not invertible\n");
+        return 0;
+    }
+
+    int recovered_key[2][2];
+    multiply(ciphertext, pt_inv, recovered_key);
+
+    printf("Recovered key matrix:\n");
+    printf("%d %d\n%d %d\n",
+           recovered_key[0][0], recovered_key[0][1],
+           recovered_key[1][0], recovered_key[1][1]);
+
+    return 0;
+}
