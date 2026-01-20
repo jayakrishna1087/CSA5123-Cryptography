@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <string.h>
+
+// Function to compute gcd
+int gcd(int a, int b) {
+    while (b != 0) {
+        int t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+// Function to find modular inverse of a mod m
+int mod_inverse(int a, int m) {
+    for (int x = 1; x < m; x++) {
+        if ((a * x) % m == 1) return x;
+    }
+    return -1; // inverse does not exist
+}
+
+// Encrypt a plaintext letter using affine cipher
+char affine_encrypt_char(char p, int a, int b) {
+    if (p >= 'A' && p <= 'Z')
+        return ((a * (p - 'A') + b) % 26) + 'A';
+    else if (p >= 'a' && p <= 'z')
+        return ((a * (p - 'a') + b) % 26) + 'a';
+    else
+        return p; // non-alphabetic characters unchanged
+}
+
+// Decrypt a ciphertext letter using affine cipher
+char affine_decrypt_char(char c, int a_inv, int b) {
+    if (c >= 'A' && c <= 'Z')
+        return ((a_inv * ((c - 'A' - b + 26) % 26)) % 26) + 'A';
+    else if (c >= 'a' && c <= 'z')
+        return ((a_inv * ((c - 'a' - b + 26) % 26)) % 26) + 'a';
+    else
+        return c;
+}
+
+int main() {
+    char plaintext[256];
+    int a, b;
+
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    int len = strlen(plaintext);
+    if (plaintext[len-1] == '\n') plaintext[len-1] = '\0';
+
+    printf("Enter key a (must be coprime with 26): ");
+    scanf("%d", &a);
+    if (gcd(a,26) != 1) {
+        printf("Error: a must be coprime with 26.\n");
+        return 1;
+    }
+
+    printf("Enter key b: ");
+    scanf("%d", &b);
+
+    char ciphertext[256], decrypted[256];
+    int a_inv = mod_inverse(a, 26);
+
+    for (int i = 0; i < strlen(plaintext); i++) {
+        ciphertext[i] = affine_encrypt_char(plaintext[i], a, b);
+    }
+    ciphertext[strlen(plaintext)] = '\0';
+
+    printf("Ciphertext: %s\n", ciphertext);
+
+    for (int i = 0; i < strlen(ciphertext); i++) {
+        decrypted[i] = affine_decrypt_char(ciphertext[i], a_inv, b);
+    }
+    decrypted[strlen(ciphertext)] = '\0';
+
+    printf("Decrypted: %s\n", decrypted);
+
+    return 0;
+}
