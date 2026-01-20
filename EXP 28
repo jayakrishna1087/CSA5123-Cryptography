@@ -1,0 +1,35 @@
+#include <stdio.h>
+
+// Function to compute (base^exp) % mod
+long long modExp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    while (exp > 0) {
+        result = (result * base) % mod;
+        exp--;
+    }
+    return result;
+}
+
+int main() {
+    long long q = 23;     // Public prime number
+    long long a = 5;      // Public primitive root
+
+    long long x = 6;      // Alice's secret key
+    long long y = 15;     // Bob's secret key
+
+    // Values sent over public channel
+    long long A = modExp(a, x, q);   // Alice sends this
+    long long B = modExp(a, y, q);   // Bob sends this
+
+    // Shared secret keys
+    long long keyAlice = modExp(B, x, q);
+    long long keyBob   = modExp(A, y, q);
+
+    printf("Public values: q = %lld, a = %lld\n", q, a);
+    printf("Alice sends: %lld\n", A);
+    printf("Bob sends: %lld\n", B);
+    printf("Shared key at Alice: %lld\n", keyAlice);
+    printf("Shared key at Bob: %lld\n", keyBob);
+
+    return 0;
+}
