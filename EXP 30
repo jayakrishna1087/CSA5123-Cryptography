@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+void block_cipher(uint8_t *block, uint8_t *key, uint8_t *out) {
+    for (int i = 0; i < 16; i++)
+        out[i] = block[i] ^ key[i];
+}
+
+void cbc_mac(uint8_t *key, uint8_t *message, int blocks, uint8_t *mac) {
+    uint8_t prev[16] = {0};
+    uint8_t temp[16];
+
+    for (int b = 0; b < blocks; b++) {
+        for (int i = 0; i < 16; i++)
+            temp[i] = message[b * 16 + i] ^ prev[i];
+
+        block_cipher(temp, key, prev);
+    }
+
+    memcpy(mac, prev, 16);
+}
+
+void print_block(const char *label, uint8_t *b) {
+    printf("%s: ", label);
+    for (int i = 0; i < 16; i++)
+        printf("%02X ", b[i]);
+    printf("\n");
+}
+
+int main() {
+    uint8_t key[16];
+    memset(key, 0x0F, 16);   
+
+    uint8_t X[16] = {
+        0x10,0x11,0x12,0x13,
+        0x14,0x15,0x16,0x17,
+        0x18,0x19,0x1A,0x1B,
+        0x1C,0x1D,0x1E,0x1F
+    };
+
+    uint8_t T[16];
+    cbc_mac(key, X, 1, T);
+    print_block("MAC(K, X)", T);
+
+    uint8_t second_block[16];
+    for (int i = 0; i < 16; i++)
+        second_block[i] = X[i] ^ T[i];
+
+    uint8_t forged_msg[32];
+    memcpy(forged_msg, X, 16);
+    memcpy(forged_msg + 16, second_block, 16);
+
+    uint8_t T2[16];
+    cbc_mac(key, forged_msg, 2, T2);
+    print_block("MAC(K, X || (X ⊕ T))", T2);
+
+    if (memcmp(T, T2, 16) == 0)
+        printf("\nVulnerability demonstrated: MAC(X) == MAC(X || (X ⊕ T))\n");
+
+    return 0;
+}
