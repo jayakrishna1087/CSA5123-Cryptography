@@ -1,0 +1,38 @@
+#include <stdio.h>
+
+// Modular exponentiation: (base^exp) % mod
+long long modExp(long long base, long long exp, long long mod) {
+    long long result = 1;
+    while (exp > 0) {
+        result = (result * base) % mod;
+        exp--;
+    }
+    return result;
+}
+
+int main() {
+    long long e = 7;      // Public key exponent
+    long long n = 187;    // RSA modulus (assumed large in theory)
+
+    char message[] = "HELLO";
+    long long cipher[10];
+    int i;
+
+    printf("Original Message: %s\n\n", message);
+
+    // Encryption
+    printf("Encrypted Message:\n");
+    for (i = 0; message[i] != '\0'; i++) {
+        int m = message[i] - 'A';     // A=0, B=1, ..., Z=25
+        cipher[i] = modExp(m, e, n);
+        printf("%c -> %lld\n", message[i], cipher[i]);
+    }
+
+    // Dictionary attack
+    printf("\nDictionary Attack Table:\n");
+    for (i = 0; i < 26; i++) {
+        printf("%c : %lld\n", 'A' + i, modExp(i, e, n));
+    }
+
+    return 0;
+}
